@@ -1,0 +1,7 @@
+//
+// Created by amir on 08.10.24.
+//
+
+#pragma once
+
+#define PROJECT_VERSION "0.0.0"
