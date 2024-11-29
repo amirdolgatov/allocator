@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+#define SIZE 100
+
 /*!
  * Аллокатор с предвыделенным объемом памяти
  * @tparam T тип данных для которых аллоцируется память
@@ -18,8 +20,8 @@ public:
     using value_type = T;
 
     custom_allocator(){
-        this->volume = 100;
-        pool = static_cast<T*>(::operator new(100 * sizeof(T)));     /// предварительно выделить память (пул) на n объектов
+        this->volume = SIZE;
+        pool = static_cast<T*>(::operator new(SIZE * sizeof(T)));     /// предварительно выделить память (пул) на n объектов
     }
 
     custom_allocator (size_t n) {
@@ -38,10 +40,11 @@ public:
      */
     T* allocate (std::size_t n)
     {
-        auto tmp = offset + n;
-        if(tmp > volume)         /// запрашивается больше чем доступно
+        auto ptr = pool + offset;
+        if(offset + n > volume)         /// запрашивается больше чем доступно
             return nullptr;
-        return pool + tmp;
+        offset = offset + n;
+        return ptr;
     }
 
     /*!
@@ -51,7 +54,7 @@ public:
      */
     void deallocate (T* p, std::size_t n)
     {
-        if(n < offset){
+        if(n <= offset){
             if(p == pool + offset - n)
                 offset = offset - n;
         }
@@ -63,8 +66,6 @@ private:
     T* current{nullptr};
     size_t offset = 0;
     size_t volume = 0;
-
-
 };
 
 
