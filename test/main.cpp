@@ -2,10 +2,12 @@
 // Created by amir on 26.11.24.
 //
 
-#include<gtest/gtest.h>
-#include"allocator.h"
-#include"list_simple.h"
-#include<map>
+#include <gtest/gtest.h>
+#include "allocator.h"
+#include "list_simple.h"
+#include <map>
+#include <numbers>
+#include <numeric>
 
 uint64_t factorial(uint64_t n){
     if(n == 0)
@@ -15,21 +17,12 @@ uint64_t factorial(uint64_t n){
     return n * factorial(n - 1);
 }
 
+
+/*!
+ * Тестируем кастомный аалокатор с контейнером STL
+ */
 TEST(Alloc, STL){
-    std::cout << "hello\n";
 
-    custom_allocator<std::pair<int, int>> alloc;
-
-    auto ptr = alloc.allocate(3);
-
-    alloc.deallocate(ptr, 3);
-
-    alloc.deallocate(ptr, 6);
-
-
-
-//    std::cout << "hello\n";
-//
     std::map<int, int, std::less<int>, custom_allocator<std::pair<int, int>>> test_map;
 
     for (int i = 0; i < 10; ++i) {
@@ -39,59 +32,51 @@ TEST(Alloc, STL){
     for (auto& [key, val]: test_map) {
         std::cout << key << " "  << val << std::endl;
     }
-
- std::cout << "hello\n";
+    SUCCEED();
 }
 
-class Logger{
-
-public:
-
-    Logger(){
-        ++id;
-        id_ = id;
-        std::cout << "default " << id_ << std::endl;
-    }
-
-    Logger(Logger& other){
-        ++id;
-        id_ = id;
-        std::cout << "copy " << id_ << " from " << other.id_  << std::endl;
-    }
-
-    Logger(Logger&& other){
-        ++id;
-        id_ = id;
-        std::cout << "move " << id_ << " from " << other.id_ << std::endl;
-    }
-
-    Logger& operator=(Logger& other){
-        ++id;
-        id_ = id;
-        std::cout << "assign " << id_ << " from " << other.id_ << std::endl;
-        return other;
-    }
-
-    inline static int id = 0;
-    int id_ = 0;
-
-};
-
+/*!
+ * Тестируем кастомный аллокатор с простой имитацией std::forward_list
+ */
 TEST(Alloc, List){
 
-    list_simple<Logger> list;
+    list_simple<uint64_t> list;
 
-    Logger a;
+    for (uint64_t i = 0; i < 10; ++i) {
+        list.push_back(factorial(i));
+    }
 
-    list.push_back(a);
-    list.push_back(Logger());
-
-
+    uint64_t i = 0;
+    for (auto x: list) {
+        ASSERT_EQ(x, factorial(i++));
+    }
 
 }
+
+/*!
+ * Тестируем работу итератора контейнера list_simple
+ */
+TEST(Iter, STL){
+
+    list_simple<int> list;
+    int sum_1 = 0;
+    int sum_2 = 0;
+
+    for (int i = 0; i < 10; ++i) {
+        auto tmp = factorial(i);
+        list.push_back(tmp);
+        sum_1 += tmp;
+    }
+
+    sum_2 = std::accumulate(list.begin(), list.end(), 0);
+
+    EXPECT_EQ(sum_2, sum_1);
+
+}
+
 
 int main(){
     testing::InitGoogleTest();
-    testing::GTEST_FLAG(filter) = "*List*";
+//    testing::GTEST_FLAG(filter) = "**";
     return RUN_ALL_TESTS();
 }

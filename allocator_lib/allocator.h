@@ -12,6 +12,9 @@
 /*!
  * Аллокатор с предвыделенным объемом памяти
  * @tparam T тип данных для которых аллоцируется память
+ *
+ * в минимальной реализации, чтобы использовать allocator_traits нужно определить
+ * 2 метода: allocate и deallocate
  */
 template <class T>
 class custom_allocator{
