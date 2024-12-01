@@ -71,7 +71,6 @@ TEST(Iter, STL){
     sum_2 = std::accumulate(list.begin(), list.end(), 0);
 
     EXPECT_EQ(sum_2, sum_1);
-
 }
 
 
